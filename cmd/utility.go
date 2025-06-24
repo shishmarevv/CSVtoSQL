@@ -69,6 +69,21 @@ func LoadEnvOrExit() {
 	}
 }
 
+func EnvIsFilled(reader *bufio.Reader) bool {
+	fmt.Print("Пропускать задание переменных (y/n)? : ")
+	response, _ := reader.ReadString('\n')
+	if strings.TrimSpace(strings.ToLower(response)) != "y" {
+		return false
+	}
+	required := []string{"DB_TYPE", "HOST", "PORT", "USER", "PASSWORD", "DB", "TABLE", "CSV", "OVERWRITE_ON_CONFLICT"}
+	for _, key := range required {
+		if os.Getenv(key) == "" {
+			return false
+		}
+	}
+	return true
+}
+
 func Run() {
 	dbType := os.Getenv("DB_TYPE")
 
@@ -97,7 +112,7 @@ func Run() {
 	fmt.Println("Успешное подключение!")
 
 	csvPath := os.Getenv("CSV")
-	importer, err := importer.NewImporter(csvPath, dbService)
+	newImporter, err := importer.NewImporter(csvPath, dbService)
 	if err != nil {
 		fmt.Println("Ошибка открытия CSV:", err)
 		os.Exit(1)
@@ -105,7 +120,7 @@ func Run() {
 
 	table := os.Getenv("TABLE")
 	overwrite := os.Getenv("OVERWRITE_ON_CONFLICT") == "true"
-	err = importer.ImportAll(table, overwrite)
+	err = newImporter.ImportAll(table, overwrite)
 	if err != nil {
 		fmt.Println("Ошибка импорта:", err)
 		os.Exit(1)

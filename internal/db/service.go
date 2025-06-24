@@ -15,7 +15,7 @@ func NewMySQLService() (*DBService, error) {
 	password := os.Getenv("PASSWORD")
 	dbname := os.Getenv("DB")
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", user, password, host, port, dbname)
-	db, err := sql.Open("db", dsn)
+	db, err := sql.Open("mysql", dsn)
 	if err != nil {
 		return nil, err
 	}
