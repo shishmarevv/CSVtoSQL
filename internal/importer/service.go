@@ -5,6 +5,8 @@ import (
 	"CSVtoSQL/internal/db"
 	"io"
 	"strings"
+
+	"github.com/schollz/progressbar/v3"
 )
 
 func NewImporter(csvPath string, db *db.DBService) (*Importer, error) {
@@ -21,6 +23,7 @@ func NewImporter(csvPath string, db *db.DBService) (*Importer, error) {
 
 func (imp *Importer) ImportAll(table string, overwrite bool) error {
 	defer imp.CSV.Close()
+	bar := progressbar.Default(int64(imp.CSV.RowCount))
 	for {
 		row, err := imp.CSV.ReadRow()
 		if err != nil {
@@ -33,6 +36,7 @@ func (imp *Importer) ImportAll(table string, overwrite bool) error {
 		if err != nil {
 			return err
 		}
+		bar.Add(1)
 	}
 	return nil
 }

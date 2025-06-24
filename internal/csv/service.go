@@ -1,6 +1,7 @@
 package csv
 
 import (
+	"bufio"
 	"encoding/csv"
 	"fmt"
 	"io"
@@ -9,6 +10,20 @@ import (
 )
 
 func NewCSVReader(filename string) (*CSVReader, error) {
+	f, err := os.Open(filename)
+	if err != nil {
+		return nil, fmt.Errorf("ошибка открытия файла: %w", err)
+	}
+	scanner := bufio.NewScanner(f)
+	rowCount := -1 // -1 чтобы не считать заголовок
+	for scanner.Scan() {
+		rowCount++
+	}
+	f.Close()
+	if err = scanner.Err(); err != nil {
+		return nil, fmt.Errorf("ошибка сканирования файла: %w", err)
+	}
+
 	file, err := os.Open(filename)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка открытия файла: %w", err)
@@ -20,7 +35,7 @@ func NewCSVReader(filename string) (*CSVReader, error) {
 		file.Close()
 		return nil, fmt.Errorf("ошибка чтения заголовка: %w", err)
 	}
-	return &CSVReader{file: file, reader: reader, Header: head}, nil
+	return &CSVReader{file: file, reader: reader, RowCount: rowCount, Header: head}, nil
 }
 
 func (c *CSVReader) ReadRow() ([]string, error) {
